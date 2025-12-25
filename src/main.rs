@@ -1,33 +1,25 @@
-use std::io;
-use rand::Rng;
-use std::cmp::Ordering;
+use std::{io, thread, time};
+use std::io::Write;
+use colored::*;
 
 fn main() {
-    println!("Salam zaebal");
-
-    let secret_number = rand::thread_rng().gen_range(1..=100);
-
-    println!("Input your ebaniy guess: ");
-
-    loop {
-        let mut random_guess = String::new();
-
-        io::stdin()
-            .read_line(&mut random_guess)
-            .expect("Failed to read line");
-
-        let random_guess: u32 = match random_guess.trim().parse() {
-            Ok(num) => num,
-            Err(_) => continue,
-        };
-
-        match random_guess.cmp(&secret_number) {
-            Ordering::Less => println!("Too small blya"),
-            Ordering::Greater => println!("Too big sosunocok"),
-            Ordering::Equal => {
-                println!("You win nihua sobi");
-                break;
-            },
-        }
+    const START: i32 = 1000;
+    let mut kaneki = START;
+    while kaneki > 6 {
+        println!("{}", format!("{kaneki} - 7 = {}", kaneki - 7).red());
+        kaneki = kaneki - 7;
+        thread::sleep(time::Duration::from_millis(10));
     }
-} 
+    
+    for _ in 1..=5 {
+        print!("{}", ".".yellow());
+        io::stdout().flush().unwrap();
+        thread::sleep(time::Duration::from_millis(500));
+    }
+    print!("\n");
+
+    for n in 1..=100 {
+        println!("{}", format!("Sosal hui inside {n}").blue());
+        thread::sleep(time::Duration::from_millis(10));
+    }
+}
