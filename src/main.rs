@@ -1,25 +1,15 @@
-use std::{io, thread, time};
-use std::io::Write;
+use rand::Rng;
 use colored::*;
 
 fn main() {
-    const START: i32 = 1000;
-    let mut kaneki = START;
-    while kaneki > 6 {
-        println!("{}", format!("{kaneki} - 7 = {}", kaneki - 7).red());
-        kaneki = kaneki - 7;
-        thread::sleep(time::Duration::from_millis(10));
-    }
-    
-    for _ in 1..=5 {
-        print!("{}", ".".yellow());
-        io::stdout().flush().unwrap();
-        thread::sleep(time::Duration::from_millis(500));
-    }
-    print!("\n");
+    let stupid_array = ["Sosisocki", "chivavue", "arbuzikes"];
 
-    for n in 1..=100 {
-        println!("{}", format!("Sosal hui inside {n}").blue());
-        thread::sleep(time::Duration::from_millis(10));
+    for word in stupid_array.iter() {
+        let random = rand::thread_rng().gen_range(1..=3);
+        match random {
+            1 => println!("{}", word.blue()),
+            2 => println!("{}", word.yellow()),
+            _ => println!("{}", word.red())
+        }
     }
 }
