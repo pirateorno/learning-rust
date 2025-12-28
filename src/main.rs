@@ -53,25 +53,65 @@ impl Database {
     fn make_admin(&mut self, email: &str) {
         if let Some(user) = self.get_user_mut(email) {
             user.is_admin = true;
-        } else {
-
         }
     }
 
-    fn login(&self, email: &str, password: &str) -> bool {
+    fn login(&self, email: &str, password: &str) -> Option<&User> {
         if let Some(user) = self.get_user(email) {
             if user.password == password {
-                return true;
+                return Some(user);
             }
         }
-        
-        false
+        None
+    }
+
+    fn delete_user(&mut self, email: &str) {
+        self.users.retain(|user| user.email != email);
+    }
+
+    fn change_password(&mut self, email: &str, password: String) {
+        if let Some(user) = self.get_user_mut(email) {
+            user.password = password;
+        }
     }
 }
 
 fn clear_screen() {
     print!("{esc}c", esc = 27 as char);
     io::stdout().flush().unwrap();
+}
+
+fn get_input_int(prompt: &str) -> i32 {
+    loop {
+        print!("{}", prompt);
+        io::stdout().flush().unwrap();
+
+        let mut shit = String::new();
+
+        io::stdin()
+            .read_line(&mut shit)
+            .expect("Failed to read line");
+
+        match shit.trim().parse() {
+            Ok(num) => break num,
+            Err(_) => println!("Please enter valid choise"),
+        }
+    }
+}
+
+fn get_input(prompt: &str) -> String {
+    loop {
+        print!("{}", prompt);
+        io::stdout().flush().unwrap();
+
+        let mut shit = String::new();
+
+        io::stdin()
+            .read_line(&mut shit)
+            .expect("Failed to read line");
+
+        break shit.trim().to_string();
+    }
 }
 
 fn main() {
@@ -83,11 +123,112 @@ fn main() {
     db.add_user(admin_email.clone(), admin_password.clone());
     db.make_admin(&admin_email);    
 
-    let test_login = db.login(&admin_email, &admin_password);
-
-    println!("{}", test_login);
-
-
     println!("Hello! This is register/login example");
+    loop {
+        println!("Menu: ");
+        println!("1 - login");
+        println!("2 - register");
+        println!("");
+        println!("0 - exit");
 
+        let choise = get_input_int("Enter your choise: ");
+        match choise {
+            1 => {
+                let login_email = get_input("Enter email: ");
+                let login_password = get_input("Enter password: ");
+
+                let login_user = db.login(&login_email, &login_password);
+                if let Some(u) = login_user {
+                    let user_id_admin = u.is_admin;
+                    loop {
+                        //get_input("");
+                        //clear_screen();
+                        println!("You logged in as: {}", login_email);
+                        println!("");
+                        println!("Menu: ");
+                        if user_id_admin {
+                            println!("0 - admin panel");
+                        }
+                        println!("1 - change password");
+                        println!("");
+                        println!("2 - logout");
+
+                        let choise = get_input_int("Enter your choise: ");
+
+                        match choise {
+                            0 => {
+                                if user_id_admin {
+                                    loop {
+                                        //get_input("");
+                                        //clear_screen();
+                                        println!("Hi admin!");
+                                        println!("");
+                                        println!("Menu: ");
+                                        println!("1 - see all users");
+                                        println!("2 - delete user");
+                                        println!("");
+                                        println!("0 - exit");
+
+                                        let choise = get_input_int("Enter your choise: ");
+
+                                        match choise {
+                                            0 => break,
+                                            1 => {
+                                                clear_screen();
+                                                let mut user_id = 0;
+                                                println!("All user list: ");
+                                                for user in &db.users {
+                                                    user_id += 1;
+                                                    println!("{user_id}. {}", user.email);
+                                                }
+                                            },
+                                            2 => {
+                                                let delete_user = get_input("Enter email to delete: ");
+                                                db.delete_user(&delete_user);
+                                            }
+                                            _ => {
+                                                continue;
+                                            }
+                                        }
+                                    }
+
+                                } else {
+                                    println!("You dont have rights to do this");
+                                    continue;
+                                }
+                            },
+                            1 => {
+                                let new_password = get_input("Enter your new password: ");
+                                db.change_password(&login_email, new_password);
+                            },
+                            2 => {
+                                break;
+                            }
+                            _ => {
+                                continue;
+                            },
+                        }
+                    }
+                } else {
+                    println!("Login failed!");
+                    continue;
+                }
+            },
+            2 => {
+                let register_email = get_input("Enter email: ");
+                let register_password = get_input("Enter password: ");
+                
+                let register_user = db.add_user(register_email, register_password);
+                println!("{}", register_user);
+            },
+            0 => {
+                clear_screen();
+                println!("Goodbye!");
+                break;
+            }
+            _ => {
+                continue;
+            }
+        }
+    }
 }
